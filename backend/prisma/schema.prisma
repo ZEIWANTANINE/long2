@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int         @id @default(autoincrement())
+  email      String      @unique
+  password   String
+  role       String
+  createdAt  DateTime    @default(now())
+  jwtSecret  String      @default(uuid())
+  Admin      Admin?
+  Researcher Researcher?
+  Teacher    Teacher?
+}
+
+model Teacher {
+  id               Int    @id @default(autoincrement())
+  userId           Int    @unique
+  sChucVu          String
+  sDonVi           String
+  sGioiTinh        String
+  sKhoa            String
+  sMaTrinhDoHocVan String
+  sQuyenHan        String
+  sTenGiangVien    String
+  user             User   @relation(fields: [userId], references: [id])
+}
+
+model Researcher {
+  id               Int    @id @default(autoincrement())
+  userId           Int    @unique
+  sChucVu          String
+  sDonViCongTac    String
+  sGioiTinh        String
+  sMaTrinhDoHocVan String
+  sQuyenHan        String
+  sTenNhaNghienCuu String
+  user             User   @relation(fields: [userId], references: [id])
+}
+
+model Admin {
+  id              Int    @id @default(autoincrement())
+  userId          Int    @unique
+  sQuyenHan       String
+  sTenQuanTriVien String
+  user            User   @relation(fields: [userId], references: [id])
+}
