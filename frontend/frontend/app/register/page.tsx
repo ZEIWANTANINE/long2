@@ -7,14 +7,17 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("RESEARCHER");
   const router = useRouter();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await registerUser({ name, email, password });
+      await registerUser({ name, email, password, role });
+      localStorage.setItem("role", role); // Lưu role vào localStorage
+    
       alert("Đăng ký thành công!");
-      router.push("/login");
+      router.push("/info");
     } catch (error) {
       alert("Đăng ký thất bại! Vui lòng thử lại.");
     }
@@ -59,6 +62,18 @@ export default function RegisterPage() {
               required
             />
           </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-2">Vai trò</label>
+            <select
+              className="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              required
+            >
+              <option value="TEACHER">Giảng viên</option>
+              <option value="RESEARCHER">Nhà nghiên cứu</option>
+            </select>
+          </div>
           <button
             type="submit"
             className="w-full bg-green-500 text-white font-medium py-3 rounded-lg hover:bg-green-600 transition duration-300"
@@ -68,7 +83,7 @@ export default function RegisterPage() {
         </form>
         <p className="text-center text-gray-600 mt-4">
           Đã có tài khoản?{" "}
-          <a href="/login" className="text-blue-500 hover:underline">
+          <a href="/info" className="text-blue-500 hover:underline">
             Đăng nhập ngay
           </a>
         </p>

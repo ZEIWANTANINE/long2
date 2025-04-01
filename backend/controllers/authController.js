@@ -1,26 +1,22 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const {prisma}  = require("../config/db");
+const { prisma }  = require("../config/db");
 const { v4: uuidv4 } = require("uuid");
 exports.register = async (req, res) => {
   try {
     const { email, password, role, additionalInfo } = req.body;
-
     if (!email || !password || !role) {
       return res.status(400).json({ error: "Thiếu thông tin email, password hoặc role" });
     }
-
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: "Email đã được sử dụng!" });
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const jwtSecret = uuidv4();
     const newUser = await prisma.user.create({
       data: { email, password: hashedPassword, role, jwtSecret },
     });
-
     // Thêm thông tin bổ sung vào bảng tương ứng
     if (role === "TEACHER" && additionalInfo) {
       await prisma.teacher.create({
@@ -35,8 +31,9 @@ exports.register = async (req, res) => {
         data: { userId: newUser.id, ...additionalInfo },
       });
     }
-
     res.json({ message: "Đăng ký thành công!", userId: newUser.id });
+    console.log("New User ID:", newUser.id);
+console.log("Additional Info:", additionalInfo);
   } catch (error) {
     console.error("Lỗi đăng ký:", error);
     res.status(500).json({ error: "Lỗi đăng ký tài khoản!" });
@@ -61,7 +58,14 @@ exports.login = async (req, res) => {
         user.jwtSecret, 
         { expiresIn: "1d" }
       );
-  
+      let hasDetails = false;
+    if (user.role === "TEACHER") {
+      const teacher = await prisma.teacher.findUnique({ where: { userId: user.id } });
+      hasDetails = !!teacher;
+    } else if (user.role === "RESEARCHER") {
+      const researcher = await prisma.researcher.findUnique({ where: { userId: user.id } });
+      hasDetails = !!researcher;
+    }
       res.json({ token, role: user.role });
       console.log('Đăng nhập thành công!');
     } catch (error) {
@@ -78,7 +82,6 @@ exports.login = async (req, res) => {
       if (!user || user.role !== "TEACHER") {
         return res.status(400).json({ error: "Người dùng không hợp lệ hoặc không phải TEACHER" });
       }
-  
       // Thêm thông tin vào bảng Teacher
       const teacher = await prisma.teacher.create({
         data: {

@@ -15,12 +15,13 @@ export default function LoginPage() {
       if (data.token) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.role); // Lưu role vào localStorage
-
         // Điều hướng dựa trên vai trò
         if (data.role === "ADMIN") {
           router.push("/admin/user"); // Chuyển hướng đến trang quản trị
-        } else {
-          router.push("/home"); // Chuyển hướng đến trang người dùng thông thường
+        } else if(data.hasDetails) {
+          router.push("/info"); // Chuyển hướng đến trang người dùng thông thường
+        } else{
+          router.push("/home"); // Chuyển hướng đến trang nhập thông tin người dùng
         }
       } else {
         alert("Sai email hoặc mật khẩu!");
